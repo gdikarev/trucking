@@ -1,0 +1,45 @@
+version: "3.7"
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: .docker/nginx/Dockerfile
+    volumes:
+      - ./app:/var/www/app/
+    ports:
+      - '8003:80'
+    networks:
+      - trucking
+    depends_on:
+      - php
+  php:
+    build:
+      context: .
+      dockerfile: .docker/php-fpm/Dockerfile
+    environment:
+      APP_ENV: test
+      DATABASE_URL: mysql://user:password@mysql:3306/fruits_db?serverVersion=5.7
+    volumes:
+      - ./app/:/var/www/app/
+    networks:
+      - trucking
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql
+    command: [ '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci', '--default-authentication-plugin=mysql_native_password' ]
+    environment:
+      MYSQL_DATABASE: trucking_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - '3309:3306'
+    #    volumes:
+    #      - ./mysql:/var/lib/mysql
+    networks:
+      - trucking
+
+networks:
+  trucking:
